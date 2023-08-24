@@ -1,83 +1,28 @@
-const fs = require('fs');
-const path = require('path');
-const db=require('../utils/database')
-const pathBuilt = path.join(
-  path.dirname(require.main.filename),
-  'data',
-  'products.json'
-);
+const Sequelize=require('sequelize')
 
-const getProductsFromFile = (callbackFn) => {
-  fs.readFile(pathBuilt, (err, fileContent) => {
-    if (err) {
-      return callbackFn([]);
+const sequelize=require('../utils/database')
+
+const Product=sequelize.define('product',{//adding table column details
+    id:{
+        type:Sequelize.INTEGER,
+        autoIncrement:true,
+        allowNull:false,
+        primaryKey:true
+    },
+    title:Sequelize.STRING,
+    price:{
+        type:Sequelize.DOUBLE,
+        allowNull:false
+    },
+    imageUrl:{
+        type:Sequelize.STRING,
+        allowNull:false
+    },
+    description:{
+        type:Sequelize.STRING,
+        allowNull:false
     }
-    callbackFn(JSON.parse(fileContent));
-  });
-};
 
-module.exports = class Product {
-  constructor(_productId, _title, _description, _price, _imageUrl) {
-    this.productId = _productId;
-    this.title = _title;
-    this.description = _description;
-    this.price = _price;
-    this.imageUrl = _imageUrl;
-  }
+})
 
-  save() {
-   /*  this.productId = Math.round(Math.random() * 1000).toString();
-    getProductsFromFile((products) => {
-      products.push(this);
-
-      fs.writeFile(pathBuilt, JSON.stringify(products), (err) => {
-        console.log('err', err);
-      });
-    }); */
-
-    return db.execute('insert into products(title,price,imageUrl,description) values(?,?,?,?)',
-    [this.title,this.price,this.imageUrl,this.description])
-  }
-
-  saveModifiedFile() {
-    if (this.productId) {
-      getProductsFromFile((products) => {
-        const existingProdIndex = products.findIndex(
-          (product) => product.productId === this.productId
-        );
-        const modifiedProducts = [...products];
-        modifiedProducts[existingProdIndex] = this;
-
-        fs.writeFile(pathBuilt, JSON.stringify(modifiedProducts), (err) => {
-          console.log('err', err);
-        });
-      });
-    }
-  }
-
- /*  static fetchAll(callbackFn) {
-    getProductsFromFile(callbackFn);
-  }
- */
-  static fetchAll() {
-    return db.execute('select * from products')//go to shop.js in controller where its called
-  }
-
-  static findProductById(pid, callbackFn) {
-    /* getProductsFromFile((products) => {
-      const product = products.find((product) => product.productId === pid);
-      callbackFn(product);
-    }); */
-
-    return db.execute('select * from products where products.id=?',[id])
-  }
-
-  static remove(id) {
-    getProductsFromFile((products) => {
-      const updatedProducts = products.filter((prod) => prod.productId !== id);
-      fs.writeFile(pathBuilt, JSON.stringify(updatedProducts), (err) => {
-        console.log('err', err);
-      });
-    });
-  }
-};
+module.exports=Product
